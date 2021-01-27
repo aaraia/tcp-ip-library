@@ -29,6 +29,7 @@ target_include_directories(example
                             PRIVATE 
                                 $<BUILD_INTERFACE:${gtest_SOURCE_DIR}/include>
                                 $<BUILD_INTERFACE:${gmock_SOURCE_DIR}/include>)
+target_compile_definitions(example PRIVATE _WIN32_WINNT=0x0A00) # fixes the "Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately." warning
 target_link_libraries(example gtest)
 target_link_libraries(example gtest_main)
 target_link_libraries(example gmock_main)

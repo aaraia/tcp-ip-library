@@ -20,4 +20,5 @@ target_include_directories(LIBTCP
                                 # when building this library this is the location it will be found
                                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lib>
                                 $<INSTALL_INTERFACE:include/lib>)  # when installing the library this is the lcoation <prefix>/include/mylib
+target_compile_definitions(LIBTCP PRIVATE _WIN32_WINNT=0x0A00)      # fixes the "Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately." warning
 install(TARGETS LIBTCP DESTINATION ${PROJECT_BINARY_DIR}/TEMP/lib) # put the library in this location
