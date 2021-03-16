@@ -19,7 +19,7 @@ typedef std::shared_ptr<TCPConnection> TCPConnectionPtr;
 class TCPServer
 {
 public:
-    TCPServer(boost::asio::io_context& io_context, std::function<ProtocolPtr(void)> fn);
+    TCPServer(boost::asio::io_context& io_context, ProtocolPtr protocol);
 
 private:
     void startAccept();
@@ -29,11 +29,16 @@ private:
     void heartBeat();
 
 private:
-    std::function<ProtocolPtr(void)> m_createProtocol;
+    ProtocolPtr m_protocol; 
     boost::asio::steady_timer t;
     boost::asio::io_context& io_context_;
     tcp::acceptor acceptor_;
-    std::map<int, ProtocolPtr> m_protocols;
+    //  eventually it might be good to have multiple protocols, one for each client.
+    //  but for now each connection will be using the servers protocol
+    //  in the future the servers protocol could be used just for connections
+    //  the client uses that protocol to connect to the server then later tells the server 
+    //  which protocol it wants to use.
+    std::map<int, ProtocolPtr> m_protocols; 
     std::map<int, TCPConnectionPtr> m_connections;
     std::mutex m_mutex;
     int m_connectionID;

@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
-add_library(LIBTCP)
+
+INCLUDE(FindProtobuf)
+FIND_PACKAGE(Protobuf REQUIRED)
+INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
+PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER proto/message.proto)
+add_library(LIBTCP ${PROTO_HEADER} ${PROTO_SRC})
+
 target_sources(LIBTCP
                 PRIVATE
                     # does not need CMAKE_CURRENT_SOURCE_DIR prefix as this cpp file will only be used internally to this library
