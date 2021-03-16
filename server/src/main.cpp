@@ -5,7 +5,9 @@
 #include "tcp-server.h"
 
 //  
-#include "protocol-a.h"
+#include "protocolA.h"
+
+//#include "proto/message.pb.h"
 
 ProtocolPtr addProtocol()
 {
@@ -16,6 +18,7 @@ int main()
 {
     try
     {
+        //message::Message m;
 
         boost::asio::io_context io_context;
         TCPServer server(io_context, std::bind(addProtocol));

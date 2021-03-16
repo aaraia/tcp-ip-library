@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 add_executable(CLIENT)
 target_sources(CLIENT 
                 PRIVATE
-                    include/protocol-a.h
+                    include/protocolA.h
                     src/main.cpp
-                    src/protocol-a.cpp
+                    src/protocolA.cpp
                 )       
 target_include_directories(CLIENT PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)                    
 list(APPEND EXTRA_LIBS LIBTCP)

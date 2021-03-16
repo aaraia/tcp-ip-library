@@ -5,7 +5,7 @@
 #include "tcp-client.h"
 
 //
-#include "protocol-a.h"
+#include "protocolA.h"
 
 int main(int argc, char* argv[])
 {
