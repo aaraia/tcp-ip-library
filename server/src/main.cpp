@@ -3,25 +3,19 @@
 
 //  libTCP
 #include "tcp-server.h"
+#include "message.pb.h"
 
 //  
 #include "protocolA.h"
-
-//#include "proto/message.pb.h"
-
-ProtocolPtr addProtocol()
-{
-    return std::make_shared<ProtocolA>();
-}
 
 int main()
 {
     try
     {
-        //message::Message m;
-
+        message::Message m;
+        ProtocolPtr protocol = std::make_shared<ProtocolA>();
         boost::asio::io_context io_context;
-        TCPServer server(io_context, std::bind(addProtocol));
+        TCPServer server(io_context, protocol);
         io_context.run();
     }
     catch (std::exception& e)

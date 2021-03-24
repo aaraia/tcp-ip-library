@@ -3,6 +3,7 @@
 
 //  libTCP
 #include "tcp-client.h"
+#include "message.pb.h"
 
 //
 #include "protocolA.h"
@@ -17,6 +18,8 @@ int main(int argc, char* argv[])
     //  service and host name
     std::string host(argv[1]);
     std::string service(argv[2]);
+
+    message::Message m;
 
     try
     {
