@@ -3,7 +3,7 @@
 
 //  libTCP
 #include "tcp-server.h"
-#include "message.pb.h"
+#include "get_name_cmd.pb.h"
 
 //  
 #include "protocolA.h"
@@ -12,8 +12,12 @@ int main()
 {
     try
     {
-        message::Message m;
+        message::GetNameCMD cmd;
+        cmd.set_cmd_id(ProtocolA::GET_NAME_CMD);
+
         ProtocolPtr protocol = std::make_shared<ProtocolA>();
+        protocol->send(cmd);
+
         boost::asio::io_context io_context;
         TCPServer server(io_context, protocol);
         io_context.run();

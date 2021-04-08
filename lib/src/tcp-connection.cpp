@@ -2,6 +2,7 @@
 
 //  lib
 #include "protocol.h"
+#include "message.pb.h"
 
 //  stl
 #include <chrono>
@@ -79,6 +80,13 @@ void TCPConnection::stop()
     m_timer.cancel();
 }
 
+void TCPConnection::registerProtocol(ProtocolPtr protocol)
+{
+    if (!protocol) return;
+
+    m_protocols.emplace(protocol->getID(), protocol);
+}
+
 void TCPConnection::handleWrite(const boost::system::error_code& error, size_t bytes_transferred)
 {
     //  The send operation may not transmit all of the data to the peer.
@@ -96,6 +104,7 @@ void TCPConnection::handleRead(const boost::system::error_code& error, size_t by
     std::cout << "\n";
     std::cout << "handleRead - bytes_transferred: " << bytes_transferred << "\n";
     
+    //  check for errors
     if (error == boost::asio::error::eof)
     {
         std::cout << "no error from read\n";
@@ -108,82 +117,63 @@ void TCPConnection::handleRead(const boost::system::error_code& error, size_t by
         return;
     }
 
-    //  check for header
-    int numHeaderFound = 0;
-    for (int i = 0; i < m_messageHeader.size() && m_readBuffer.size() >= m_messageHeader.size(); ++i)
-    {
-        if (m_readBuffer[i] == m_messageHeader[i])
-        {
-            ++numHeaderFound;
-        }
+    auto fndHeader = m_currentMessage.find_last_of(m_messageHeader);
+    if (fndHeader == std::string::npos) {
+        //  no header yet
+        m_reading = false;
+        return;
     }
 
-    bool foundHeader = numHeaderFound == m_messageHeader.size();
-
-    std::string data;
-    std::string otherData;
-    std::for_each(m_readBuffer.begin(), m_readBuffer.begin() + bytes_transferred, [&data, &otherData, this](const char c) {
-        if (c != '\n')
-        {
-            data.push_back(c);
-            m_currentMessage.push_back(c);
-        }
-        else
-        {
-            otherData.push_back(c);
-        }
-    });
-
-    std::string buff;
-    for (int i = 0; i < READ_BUFFER_SIZE; ++i)
+    auto fndFooter = m_currentMessage.find_last_of(m_messageFooter);
+    if (fndFooter == std::string::npos)
     {
-        buff.push_back(m_readBuffer[i]);
+        //  no footer yet
+        m_reading = false;
+        return;
     }
 
-    std::cout << "buff: " << buff << "\n";
-
-    //  check for footer in the total data recieved so far, this is because the footer could be sent in two packets and be split.
-    //  the header will always be in the first packet as it is the first data sent, but the footer is the last data sent anc
-    //  could push past the tcp buffer size of 128 bytes and some of it sent in the next packet/message
-    int numFooterFound = 0;
-    for (int i = 0; i < m_messageFooter.size() && m_currentMessage.size() >= m_messageFooter.size(); ++i)
+    if (fndFooter <= fndHeader)
     {
-        if (m_currentMessage[(m_currentMessage.size() - m_messageFooter.size()) + i] == m_messageFooter[i])
-        {
-            ++numFooterFound;
-        }
+        //  could be multiple messages
+        //  decide what to do here! TODO
+        //  for no print message
+        std::cout << "footer is before header " << m_currentMessage;
+        m_reading = false;
+        return;
     }
 
-    bool foundFooter = numFooterFound == m_messageFooter.size();
+    //  valid packet of data
+    std::string packet = m_currentMessage.substr(fndHeader + m_messageHeader.size(), fndFooter);    
 
-    if (foundHeader)
+    //  convert to protocol buffer
+    message::Message message;
+    message.ParseFromString(packet);
+
+    //  find the protocol
+    uint64_t id = message.protocol_id();
+    auto protocolIter = m_protocols.find(id);
+    if (protocolIter == m_protocols.end())
     {
-        //  clear and prepare for next message
-        std::cout << "header\n";
+        //  no protocol registered!
+        std::cout << "protocol: " << id << " not registered";
+        m_reading = false;
+        return;
     }
 
-    if (foundFooter)
-    {
-        //  clear and prepare for next message
-        std::cout << "footer\n";
-        m_lastMessage = m_currentMessage;
-        m_currentMessage.resize(0);
-        
-        if (m_protocol)
-        {
-            m_protocol->receive(m_lastMessage);
-        }
-    }
+    //  send the message to the correct protocol for further processing
+    protocolIter->second->receive(std::move(message));
 
-    std::cout << "data: " << data << "\n";
-    std::cout << "otherData: " << otherData << "\n";
-    std::cout << "m_currentMessage: " << m_currentMessage << "\n";
-    std::cout << "m_lastMessage: " << m_lastMessage << "\n";
+    //  print some debug and clear the message 
+    std::string remainderFront = m_currentMessage.substr(0, fndHeader);
+    std::string remainderBack = m_currentMessage.substr(fndFooter);
+    std::cout << "remainderFront " << remainderFront;
+    std::cout << "remainderBack " << remainderBack;
+    m_currentMessage.resize(0);
 
     m_reading = false;
 }
 
-void TCPConnection::send(const std::string& message)
+void TCPConnection::send(std::string&& message)
 {
     std::lock_guard<std::mutex> lock(m_senderQueueMutex);
     m_sendQueue.emplace(message);
@@ -199,7 +189,7 @@ void TCPConnection::listenFunc()
         if (m_reading) continue;
 
         //  lock the mutex to prevent any sending while listening
-        std::lock_guard<std::mutex> lock(m_socketMutex);
+        std::lock_guard<std::mutex> lock(m_shareSocketMutex);
 
         m_reading = true;
 
@@ -232,7 +222,7 @@ void TCPConnection::senderFunc()
         if (m_sendQueue.empty()) continue;
 
         //  lock the mutex to prevent any listening while sending
-        std::lock_guard<std::mutex> lock(m_socketMutex);
+        std::lock_guard<std::mutex> lock(m_shareSocketMutex);
 
         std::string message = m_sendQueue.front();
 

@@ -45,8 +45,6 @@ void TCPServer::handleAccept(TCPConnectionPtr new_connection, const boost::syste
 
         std::lock_guard<std::mutex> lock(m_mutex);
         m_connections.emplace(m_connectionID, new_connection);
-        m_protocols.emplace(m_connectionID, new_connection->getProtocol());
-
         ++m_connectionID;
 
         std::cout << "handleAccept: connection started\n";

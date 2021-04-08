@@ -3,6 +3,7 @@
 //  stl
 #include <iostream>
 #include <queue>
+#include <unordered_map>
 
 //  boost
 #include <boost/asio.hpp>
@@ -28,18 +29,22 @@ public:
 
     tcp::socket& getSocket();
 
+    void send(std::string&& message);
+
+    //  start/stop the connection
     void start();
     void stop();
 
-    void send(const std::string& message);
+    //  register a protocol
+    void registerProtocol(ProtocolPtr protocol);
 
+    //  define the packet header
     void setHeader(const std::string& str) { m_messageHeader = str; }
     void setFooter(const std::string& str) { m_messageFooter = str; }
 
+    //  query the state of the connection
     bool isStarted() const { return m_started; }
     bool hasError() const { return m_connectionResetByPeer; }
-
-    ProtocolPtr getProtocol() { return m_protocol; }
 
 private:
     TCPConnection(boost::asio::io_context& io_context, ProtocolPtr protocol);
@@ -56,6 +61,7 @@ private:
 private:
     static const int SEND_BUFFER_SIZE = 1024;
     static const int READ_BUFFER_SIZE = 128;
+    std::unordered_map<uint64_t, ProtocolPtr> m_protocols;
     std::queue<std::string> m_sendQueue;
     boost::array<char, READ_BUFFER_SIZE> m_readBuffer;
     boost::array<char, SEND_BUFFER_SIZE> m_sendBuffer;
@@ -63,7 +69,7 @@ private:
     boost::asio::steady_timer m_timer;
     std::thread m_listenThread;
     std::thread m_receiveThread;
-    std::mutex m_socketMutex;
+    std::mutex m_shareSocketMutex;
     std::mutex m_senderQueueMutex;
     ProtocolPtr m_protocol;
     std::string m_lastMessage;
