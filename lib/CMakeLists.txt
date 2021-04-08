@@ -3,19 +3,22 @@ cmake_minimum_required(VERSION 3.10)
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 INCLUDE_DIRECTORIES(${PROTOBUF_INCLUDE_DIR})
-PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/proto/message.proto)
+file(GLOB ProtoFiles "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
+PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ${ProtoFiles})
 add_library(LIBTCP ${PROTO_HEADER} ${PROTO_SRC})
 
 target_sources(LIBTCP
                 PRIVATE
                     # does not need CMAKE_CURRENT_SOURCE_DIR prefix as this cpp file will only be used internally to this library
                     src/protocol.cpp
+                    src/protocolA.cpp
                     src/tcp-connection.cpp
                     src/tcp-server.cpp
                     src/tcp-client.cpp
                 PUBLIC
                     # this is the path that other projects will use to find this file, so it needs to have CMAKE_CURRENT_SOURCE_DIR
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/protocol.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/protocolA.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/tcp-connection.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/tcp-server.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/tcp-client.h

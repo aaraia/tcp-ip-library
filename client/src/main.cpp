@@ -19,11 +19,9 @@ int main(int argc, char* argv[])
     std::string host(argv[1]);
     std::string service(argv[2]);
 
-    message::Message m;
-
     try
     {
-        ProtocolAPtr protocol = std::shared_ptr<ProtocolA>(new ProtocolA{});
+        ProtocolAPtr protocol = std::make_shared<ProtocolA>();
         boost::asio::io_context io_context;
         TCPClient client(io_context, host, service, protocol);
         client.connect();

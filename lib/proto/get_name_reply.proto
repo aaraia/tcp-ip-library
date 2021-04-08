@@ -1,8 +1,8 @@
 syntax = "proto3";
 package message;
 
-message Message {
+message GetNameReply {
     uint64 protocol_id = 1;
     uint64 cmd_id = 2;
-    string body = 3;
+    string name = 3;
 }
