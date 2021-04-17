@@ -1,9 +1,13 @@
 #pragma once
 
+//  stl
 #include <iostream>
+
+//  boost
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
+//  forwards
 using boost::asio::ip::tcp;
 
 class Protocol;

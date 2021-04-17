@@ -10,7 +10,7 @@
 #include <boost/array.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
-//  using
+//  forwards
 using boost::asio::ip::tcp;
 
 class Protocol;

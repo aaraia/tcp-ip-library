@@ -1,5 +1,6 @@
 #pragma once
 
+//  lib
 #include "protocol.h"
 
 //  stl
@@ -13,7 +14,7 @@ class Observer;
 using ObserverPtr = std::shared_ptr<Observer>;
 
 using ObserverArray = std::vector<ObserverPtr>;
-using ObserverHashTable = std::unordered_map<uint64_t, ObserverArray>;
+using ObserverHashTable = std::unordered_map<uint64_t, ObserverArray>;  //  id of command, list of observers for that command
 
 class ProtocolA : public Protocol
 {
@@ -29,7 +30,7 @@ public:
 
 public:
     ProtocolA();
-    ~ProtocolA();
+    virtual ~ProtocolA();
 
     void receive(message::Message&& msg) override;
 
@@ -41,7 +42,8 @@ private:
     std::queue<message::Message> m_queueTwo;
     std::queue<message::Message>* m_inQueue = &m_queueOne;
     std::queue<message::Message>* m_outQueue = &m_queueTwo;
-    //TODO: next step is to for observers for each type of command
+    //  NOTE: perhaps better to store concrete type of observer
+    //  as the commands of the protocol will be known at compile time
     ObserverHashTable m_observers;
     std::mutex m_mutex;
     std::thread m_notifyThread;
