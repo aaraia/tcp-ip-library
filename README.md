@@ -1,5 +1,4 @@
-# tcp-ip-library
-In progress tcp-ip library
+# tcp-ip-library (in progress)
 - server listens on port 13, localhost
 - multiple clients possible
 
@@ -24,6 +23,7 @@ TCPConnection
 - when a header is detected all subsequent bytes received are accumulated in a buffer until the footer is detected.
 - the header and footer are then stripped and the payload forwarded to the message handler
 
+Observers
+- each command has its own observer class
+- can inherit from this observer class and override notify function to provide custom command handling
 
-//  questions
-what is the upper limit of clients/connections/sockets?
