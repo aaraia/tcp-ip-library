@@ -10,6 +10,9 @@ add_library(LIBTCP ${PROTO_HEADER} ${PROTO_SRC})
 target_sources(LIBTCP
                 PRIVATE
                     # does not need CMAKE_CURRENT_SOURCE_DIR prefix as this cpp file will only be used internally to this library
+                    src/observer.cpp
+                    src/observerGetNameCmd.cpp
+                    src/observerGetNameReply.cpp
                     src/protocol.cpp
                     src/protocolA.cpp
                     src/tcp-connection.cpp
@@ -17,6 +20,9 @@ target_sources(LIBTCP
                     src/tcp-client.cpp
                 PUBLIC
                     # this is the path that other projects will use to find this file, so it needs to have CMAKE_CURRENT_SOURCE_DIR
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/observer.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/observerGetNameCmd.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/observerGetNameReply.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/protocol.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/protocolA.h
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/lib/tcp-connection.h

@@ -1,6 +1,6 @@
 #include "tcp-server.h"
 
-//  
+//  lib
 #include "tcp-connection.h"
 #include "protocol.h"
 
